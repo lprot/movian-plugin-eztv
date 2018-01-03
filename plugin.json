@@ -1,0 +1,15 @@
+{
+	"description": "<p>EZTV, your one stop source for all your favorite TV shows. FREE downloads! Watch more TV Series than ever. EZTV is releasing daily new episodes. SAFE!",
+	"author": "lprot",
+	"homepage": "https://github.com/lprot/movian-plugin-eztv",
+	"title": "EZTV",
+	"synopsis": "EZTV - TV Torrents Online Series Download",
+	"version": "0.3.2",
+        "file": "eztv.js",
+	"showtimeVersion": "4.10",
+	"type": "ecmascript",
+	"id": "eztvapi",
+	"icon": "logo.png",
+	"category": "video",
+        "apiversion": 1
+}
