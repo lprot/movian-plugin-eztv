@@ -73,6 +73,13 @@ new page.Route(plugin.id + ":play:(.*):(.*):(.*):(.*):(.*)", function(page, url,
     page.loading = false;
 });
 
+function bytesToSize(bytes) {
+    var sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+    if (bytes == 0) return '0 Byte';
+    var i = parseInt(Math.floor(Math.log(bytes) / Math.log(1024)));
+    return Math.round(bytes / Math.pow(1024, i), 2) + ' ' + sizes[i];
+};
+
 function browseItems(page, query) {
     var fromPage = 1, tryToSearch = true;
     page.entries = 0;
@@ -89,13 +96,13 @@ function browseItems(page, query) {
              var item = page.appendItem(plugin.id + ':play:' + escape(json.torrents[i].torrent_url) + ':' + escape(json.torrents[i].title) + ':' + json.torrents[i].imdb_id + ':' + json.torrents[i].season + ':' + json.torrents[i].episode, "video", {
                  title: new showtime.RichText(json.torrents[i].title),
                  icon: json.torrents[i].small_screenshot ? 'https:' + json.torrents[i].small_screenshot : 'https://ezimg.ch/s/1/9/image-unavailable.jpg',
-                 year: +json.torrents[i].date_released_unix,
                  description: new showtime.RichText(coloredStr('Season: ', orange) + json.torrents[i].season +
                      coloredStr(' Episode: ', orange) + json.torrents[i].episode +
+                     coloredStr(' Released: ', orange) + new Date(json.torrents[i].date_released_unix * 1000) +
                      coloredStr('<br>Seeds: ', orange) + coloredStr(json.torrents[i].seeds, green) +
                      coloredStr(' Peers: ', orange) + coloredStr(json.torrents[i].peers, red) +
                      (json.torrents[i].imdb_id ? coloredStr('<br>IMDb ID: ', orange) + 'tt' + json.torrents[i].imdb_id : '') +
-                     coloredStr(' Size (bytes): ', orange) + json.torrents[i].size_bytes)
+                     coloredStr(' Size: ', orange) + bytesToSize(json.torrents[i].size_bytes))
              });
              page.entries++;
              if (service.enableMetadata) {
