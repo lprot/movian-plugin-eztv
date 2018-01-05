@@ -4,7 +4,7 @@
 	"homepage": "https://github.com/lprot/movian-plugin-eztv",
 	"title": "EZTV",
 	"synopsis": "EZTV - TV Torrents Online Series Download",
-	"version": "0.3.4",
+	"version": "0.3.5",
         "file": "eztv.js",
 	"showtimeVersion": "4.10",
 	"type": "ecmascript",

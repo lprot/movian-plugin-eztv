@@ -27,10 +27,6 @@ var logo = Plugin.path + "logo.png";
 
 var blue = '6699CC', orange = 'FFA500', red = 'EE0000', green = '008B45';
 
-function colorStr(str, color) {
-    return '<font color="' + color + '"> (' + str + ')</font>';
-}
-
 function coloredStr(str, color) {
     return '<font color="' + color + '">' + str + '</font>';
 }
@@ -47,7 +43,7 @@ function setPageHeader(page, title) {
 
 service.create(plugin.title, plugin.id + ":start", "video", true, logo);
 
-settings.globalSettings(plugin.title, logo, plugin.synopsis);
+settings.globalSettings(plugin.id, plugin.title, logo, plugin.synopsis);
 settings.createBool('enableMetadata', 'Enable metadata fetching', false, function(v) {
     service.enableMetadata = v;
 });
@@ -121,7 +117,46 @@ function browseItems(page, query) {
 	
 new page.Route(plugin.id + ":start", function(page) {
     setPageHeader(page, plugin.synopsis);
+    page.appendItem(plugin.id + ":search:", 'search', {
+        title: 'Search at ' + service.baseUrl
+    });
     browseItems(page);
     page.loading = false;
 });
 
+function search(page, query) {
+    page.entries = 0;
+    page.loading = true;
+    var doc = http.request(service.baseUrl + "/search/"+ escape(query).replace(/%20/g, '-')).toString();
+    // 1-link to the show, 2-show's title, 3-episode url, 4-episode's title, 5-magnet&torrent urls, 6-size, 7-released, 8-seeds
+    var re = /<tr name="hover"[\s\S]*?<a href="([\s\S]*?)"[\s\S]*?alt="Info" title="([\s\S]*?)"[\s\S]*?<a href="([\s\S]*?)"[\s\S]*?class="epinfo">([\s\S]*?)<\/a>[\s\S]*?<td align="center"([\s\S]*?)<\/td>[\s\S]*?class="forum_thread_post">([\s\S]*?)<\/td>[\s\S]*?class="forum_thread_post">([\s\S]*?)<\/td>[\s\S]*?class="forum_thread_post">[\s\S]*?">([\s\S]*?)</g;
+    var match = re.exec(doc);
+    while (match) {
+        var re2 = /<a href="([\s\S]*?)"/g;
+        var urls = re2.exec(match[5]);
+        var lnk = '';        
+        while (urls) { // we prefer .torrent 
+            lnk = urls[1];
+            urls = re2.exec(match[5])
+        }
+        var item = page.appendItem('torrent:video:' + lnk, "video", {
+             title: new showtime.RichText(match[4]),
+             icon: logo,
+             description: new showtime.RichText(coloredStr('Seeds: ', orange) + match[8] +
+                 coloredStr('<br>Released: ', orange) + match[7] +
+                 coloredStr('<br>Size: ', orange) + match[6])
+             });
+             page.entries++;
+      match = re.exec(doc);
+    }
+    page.loading = false;
+}
+
+new page.Route(plugin.id + ":search:(.*)", function(page, query) {
+    setPageHeader(page, plugin.synopsis + ' / ' + query);
+    search(page, query);
+});
+
+page.Searcher(plugin.id, logo, function(page, query) {
+    search(page, query);
+});
