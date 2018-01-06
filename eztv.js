@@ -1,7 +1,7 @@
 /**
  * EZTV plugin for Movian Media Center
  *
- *  Copyright (C) 2015-2018 lprot
+ *  Copyright (C) 2015-2018 Gekko, lprot
  *
  *  This program is free software: you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,12 +21,18 @@ var page = require('showtime/page');
 var service = require('showtime/service');
 var settings = require('showtime/settings');
 var http = require('showtime/http');
-
 var plugin = JSON.parse(Plugin.manifest);
 var logo = Plugin.path + "logo.png";
 
-var blue = '6699CC', orange = 'FFA500', red = 'EE0000', green = '008B45';
+RichText = function(x) {
+    this.str = x.toString();
+}
 
+RichText.prototype.toRichString = function(x) {
+    return this.str;
+}
+
+var blue = '6699CC', orange = 'FFA500', red = 'EE0000', green = '008B45';
 function coloredStr(str, color) {
     return '<font color="' + color + '">' + str + '</font>';
 }
@@ -55,7 +61,7 @@ settings.createString('baseURL', "Base URL without '/' at the end", 'https://ezt
 new page.Route(plugin.id + ":play:(.*):(.*):(.*):(.*):(.*)", function(page, url, title, imdb_id, season, episode) {
     page.loading = true;
     page.type = 'video';
-    page.source = "videoparams:" + showtime.JSONEncode({
+    page.source = "videoparams:" + JSON.stringify({
         title: unescape(title),
         canonicalUrl: plugin.id + ':play:' + url + ':' + title + ':' + imdb_id + ':' + season + ':' + episode,
         sources: [{
@@ -87,12 +93,12 @@ function browseItems(page, query) {
         var doc = http.request(url).toString();
 
         page.loading = false;
-        var json = showtime.JSONDecode(doc);
+        var json = JSON.parse(doc);
         for (var i in json.torrents) {
              var item = page.appendItem(plugin.id + ':play:' + escape(json.torrents[i].torrent_url) + ':' + escape(json.torrents[i].title) + ':' + json.torrents[i].imdb_id + ':' + json.torrents[i].season + ':' + json.torrents[i].episode, "video", {
-                 title: new showtime.RichText(json.torrents[i].title),
+                 title: new RichText(json.torrents[i].title),
                  icon: json.torrents[i].small_screenshot ? 'https:' + json.torrents[i].small_screenshot : 'https://ezimg.ch/s/1/9/image-unavailable.jpg',
-                 description: new showtime.RichText(coloredStr('Season: ', orange) + json.torrents[i].season +
+                 description: new RichText(coloredStr('Season: ', orange) + json.torrents[i].season +
                      coloredStr(' Episode: ', orange) + json.torrents[i].episode +
                      coloredStr(' Released: ', orange) + new Date(json.torrents[i].date_released_unix * 1000) +
                      coloredStr('<br>Seeds: ', orange) + coloredStr(json.torrents[i].seeds, green) +
@@ -140,9 +146,9 @@ function search(page, query) {
             urls = re2.exec(match[5])
         }
         var item = page.appendItem('torrent:video:' + lnk, "video", {
-             title: new showtime.RichText(match[4]),
+             title: new RichText(match[4]),
              icon: logo,
-             description: new showtime.RichText(coloredStr('Seeds: ', orange) + match[8] +
+             description: new RichText(coloredStr('Seeds: ', orange) + match[8] +
                  coloredStr('<br>Released: ', orange) + match[7] +
                  coloredStr('<br>Size: ', orange) + match[6])
              });
