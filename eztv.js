@@ -131,6 +131,7 @@ new page.Route(plugin.id + ":start", function(page) {
 });
 
 function search(page, query) {
+    setPageHeader(page, plugin.title);
     page.entries = 0;
     page.loading = true;
     var doc = http.request(service.baseUrl + "/search/"+ escape(query).replace(/%20/g, '-')).toString();
@@ -159,7 +160,6 @@ function search(page, query) {
 }
 
 new page.Route(plugin.id + ":search:(.*)", function(page, query) {
-    setPageHeader(page, plugin.synopsis + ' / ' + query);
     search(page, query);
 });
 
