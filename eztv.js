@@ -96,15 +96,16 @@ function browseItems(page, query) {
         var json = JSON.parse(doc);
         for (var i in json.torrents) {
              var item = page.appendItem(plugin.id + ':play:' + escape(json.torrents[i].torrent_url) + ':' + escape(json.torrents[i].title) + ':' + json.torrents[i].imdb_id + ':' + json.torrents[i].season + ':' + json.torrents[i].episode, "video", {
-                 title: new RichText(json.torrents[i].title),
+                 title: json.torrents[i].title,
                  icon: json.torrents[i].small_screenshot ? 'https:' + json.torrents[i].small_screenshot : 'https://ezimg.ch/s/1/9/image-unavailable.jpg',
-                 description: new RichText(coloredStr('Season: ', orange) + json.torrents[i].season +
-                     coloredStr(' Episode: ', orange) + json.torrents[i].episode +
-                     coloredStr(' Released: ', orange) + new Date(json.torrents[i].date_released_unix * 1000) +
-                     coloredStr('<br>Seeds: ', orange) + coloredStr(json.torrents[i].seeds, green) +
-                     coloredStr(' Peers: ', orange) + coloredStr(json.torrents[i].peers, red) +
-                     (json.torrents[i].imdb_id ? coloredStr('<br>IMDb ID: ', orange) + 'tt' + json.torrents[i].imdb_id : '') +
-                     coloredStr(' Size: ', orange) + bytesToSize(json.torrents[i].size_bytes))
+                 vtype: 'tvseries',
+                 season: {number: +json.torrents[i].season},
+                 episode: {title: json.torrents[i].title, number: +json.torrents[i].episode},
+                 genre: new RichText(coloredStr('S: ', orange) + coloredStr(json.torrents[i].seeds, green) +
+                     coloredStr(' P: ', orange) + coloredStr(json.torrents[i].peers, red) +
+                     coloredStr(' Size: ', orange) + bytesToSize(json.torrents[i].size_bytes) +
+                     (json.torrents[i].imdb_id ? coloredStr('<br>IMDb ID: ', orange) + 'tt' + json.torrents[i].imdb_id : '')),
+                 tagline: new RichText(coloredStr('Released: ', orange) + new Date(json.torrents[i].date_released_unix * 1000))
              });
              page.entries++;
              if (service.enableMetadata) {
@@ -149,9 +150,9 @@ function search(page, query) {
         var item = page.appendItem('torrent:video:' + lnk, "video", {
              title: new RichText(match[4]),
              icon: logo,
-             description: new RichText(coloredStr('Seeds: ', orange) + match[8] +
-                 coloredStr('<br>Released: ', orange) + match[7] +
-                 coloredStr('<br>Size: ', orange) + match[6])
+             genre: new RichText((match[8] ? coloredStr('Seeds: ', orange) + coloredStr(match[8], green) + ' ' : '') +
+                 coloredStr('Size: ', orange) + match[6]),
+             tagline: new RichText(coloredStr('<br>Released: ', orange) + match[7])
              });
              page.entries++;
       match = re.exec(doc);
